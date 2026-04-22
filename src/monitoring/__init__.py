@@ -13,7 +13,6 @@ from .prometheus import (
     MetricTimer,
     PROMETHEUS_PORT,
 )
-
 MONITORING_ENABLED = os.getenv("MONITORING_ENABLED", "true").lower() == "true"
 
 

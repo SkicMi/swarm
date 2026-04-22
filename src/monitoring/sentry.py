@@ -13,7 +13,6 @@ import os
 from typing import Optional
 
 import sentry_sdk
-from sentry_sdk.integrations.asgi import SentryASGIMiddleware
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 
@@ -51,7 +50,6 @@ class SentryConfig:
             release=os.getenv("SWARM_VERSION", "0.1.0"),
             send_default_pii=False,
             attach_stacktrace=True,
-            # Performance monitoring
             instrumenter="otelp",
         )
         self._initialized = True
@@ -97,12 +95,10 @@ class SentryConfig:
         )
 
 
-# Global instance
 _sentry_config: Optional[SentryConfig] = None
 
 
 def get_sentry() -> SentryConfig:
-    """Get or create global Sentry config."""
     global _sentry_config
     if _sentry_config is None:
         _sentry_config = SentryConfig()
@@ -115,7 +111,6 @@ def init_sentry(
     sample_rate: float = 1.0,
     traces_sample_rate: float = 0.1,
 ) -> SentryConfig:
-    """Initialize Sentry with configuration."""
     global _sentry_config
     _sentry_config = SentryConfig(
         dsn=dsn,

@@ -14,11 +14,11 @@ from aiohttp import web
 PROMETHEUS_PORT = int(os.getenv("PROMETHEUS_PORT", "9090"))
 
 
+
 class SwarmMetrics:
     """All metrics for Project Swarm."""
 
     def __init__(self):
-        # Agent metrics
         self.agent_tasks_total = Counter(
             "swarm_agent_tasks_total",
             "Total number of tasks processed by agent",
@@ -35,8 +35,6 @@ class SwarmMetrics:
             "Number of currently active agents",
             ["agent_type"],
         )
-
-        # MCP metrics
         self.mcp_requests_total = Counter(
             "swarm_mcp_requests_total",
             "Total MCP requests",
@@ -47,8 +45,6 @@ class SwarmMetrics:
             "MCP request duration",
             ["mcp_server", "method"],
         )
-
-        # Memory metrics
         self.memory_queries_total = Counter(
             "swarm_memory_queries_total",
             "Total memory queries",
@@ -59,8 +55,6 @@ class SwarmMetrics:
             "Number of vectors in memory",
             ["memory_type"],
         )
-
-        # Orchestrator metrics
         self.task_queue_size = Gauge(
             "swarm_task_queue_size",
             "Current task queue size",
@@ -71,22 +65,16 @@ class SwarmMetrics:
             "Total orchestration cycles",
             ["status"],
         )
-
-        # GitHub metrics
         self.github_operations_total = Counter(
             "swarm_github_operations_total",
             "Total GitHub operations",
             ["operation", "status"],
         )
-
-        # Error metrics
         self.errors_total = Counter(
             "swarm_errors_total",
             "Total errors",
             ["error_type", "component"],
         )
-
-        # System metrics
         self.swarm_info = Info("swarm", "Project Swarm information")
         self.swarm_info.info({
             "version": os.getenv("SWARM_VERSION", "0.1.0"),
@@ -104,8 +92,8 @@ def get_metrics() -> SwarmMetrics:
     return _metrics
 
 
+
 async def metrics_handler(request: web.Request) -> web.Response:
-    """Serve Prometheus metrics."""
     return web.Response(
         body=generate_latest(),
         content_type=CONTENT_TYPE_LATEST,
@@ -113,19 +101,17 @@ async def metrics_handler(request: web.Request) -> web.Response:
 
 
 def setup_metrics_routes(app: web.Application):
-    """Add metrics route to aiohttp app."""
     app.router.add_get("/metrics", metrics_handler)
     app.router.add_get("/health", health_handler)
 
 
+
 async def health_handler(request: web.Request) -> web.Response:
-    """Health check endpoint."""
     return web.Response(text="OK")
 
 
-class MetricTimer:
-    """Context manager for timing operations."""
 
+class MetricTimer:
     def __init__(self, histogram: Histogram, labels: Dict[str, str]):
         self.histogram = histogram
         self.labels = labels
