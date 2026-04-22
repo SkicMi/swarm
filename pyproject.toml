@@ -1,0 +1,48 @@
+[project]
+name = "project-swarm"
+version = "0.1.0"
+description = "24/7 Autonomous Development & Self-Healing Harness"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    {name = "Swarm Team"}
+]
+dependencies = [
+    "aiohttp>=3.9.0",
+    "pydantic>=2.0.0",
+    "modelcontextprotocol>=1.0.0",
+    "chromadb>=0.4.0",
+    "qdrant-client>=1.7.0",
+    "PyGithub>=1.59.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=4.9.0",
+    "playwright>=1.40.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.12.0",
+    "isort>=5.12.0",
+    "mypy>=1.8.0",
+    "ruff>=0.1.0",
+]
+redis = ["redis>=5.0.0"]
+
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

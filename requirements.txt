@@ -1,0 +1,58 @@
+# Project Swarm - Python Dependencies
+# 24/7 Autonomous Development & Self-Healing Harness
+
+# === Core Framework ===
+aiohttp>=3.9.0
+asyncio>=3.9.0
+pydantic>=2.0.0
+
+# === MCP (Model Context Protocol) ===
+modelcontextprotocol>=1.0.0
+
+# === Memory Layer ===
+chromadb>=0.4.0
+qdrant-client>=1.7.0
+
+# === GitHub Integration ===
+github3.py>=3.0.0
+PyGithub>=1.59.0
+
+# === Documentation (Context7) ===
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+requests>=2.31.0
+
+# === Browser Automation ===
+playwright>=1.40.0
+selenium>=4.15.0
+
+# === Configuration & State ===
+pyyaml>=6.0
+python-dotenv>=1.0.0
+python-multipart>=0.0.6
+
+# === Observability ===
+opentelemetry-api>=1.20.0
+opentelemetry-sdk>=1.20.0
+
+# === Testing ===
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+httpx>=0.25.0
+
+# === Development Tools ===
+black>=23.12.0
+isort>=5.12.0
+mypy>=1.8.0
+ruff>=0.1.0
+
+# === Optional: Redis for Semantic Memory ===
+redis>=5.0.0
+
+# === Optional: Database (if not using MemPalace) ===
+# sqlite3 (built-in)
+
+# === Platform-Specific ===
+# For Docker SDK (optional):
+# docker>=6.1.0
