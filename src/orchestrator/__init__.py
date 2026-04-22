@@ -1,14 +1,23 @@
-from .agent import AgentConfig, AgentResult, AgentStatus
+from .orchestrator import SwarmOrchestrator, OrchestratorConfig, ModelType, get_model_for_task, get_orchestrator_model
 from .task import Task, TaskPriority, TaskResult
-from .coordinator import Coordinator, CoordinatorConfig
+from .agent import AgentConfig, AgentResult, AgentStatus
+from .worker_pool import WorkerPool, WorkerPoolConfig
+from .task_queue import TaskQueue, TaskQueueConfig
 
 __all__ = [
-    "AgentConfig",
-    "AgentResult", 
-    "AgentStatus",
+    "SwarmOrchestrator",
+    "OrchestratorConfig",
+    "ModelType",
+    "get_model_for_task",
+    "get_orchestrator_model",
     "Task",
     "TaskPriority",
     "TaskResult",
-    "Coordinator",
-    "CoordinatorConfig",
+    "AgentConfig",
+    "AgentResult",
+    "AgentStatus",
+    "WorkerPool",
+    "WorkerPoolConfig",
+    "TaskQueue",
+    "TaskQueueConfig",
 ]
