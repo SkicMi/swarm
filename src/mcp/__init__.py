@@ -1,5 +1,3 @@
-# MCP Module
-from .client import MCPClient
-from .server import MCPServer
+from .client import MCPClient, MCPConnection
 
-__all__ = ["MCPClient", "MCPServer"]
+__all__ = ["MCPClient", "MCPConnection"]

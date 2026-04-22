@@ -1,6 +1,3 @@
-# Memory Module
-from .mempalace import MemPalaceMemory
-from .graph import GraphMemory
-from .episodic import EpisodicMemory
+from .wrapper import MemoryWrapper, MemoryQuery, MemoryResult
 
-__all__ = ["MemPalaceMemory", "GraphMemory", "EpisodicMemory"]
+__all__ = ["MemoryWrapper", "MemoryQuery", "MemoryResult"]
