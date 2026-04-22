@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
+import logging
 
-from .agent import AgentConfig, AgentResult, AgentStatus
 from .task import Task, TaskPriority, TaskResult
+
+logger = logging.getLogger(__name__)
 
 
 class ModelType(Enum):
@@ -100,3 +102,129 @@ class SwarmOrchestrator:
         if self.config.fallback_models:
             return self.config.fallback_models[0]
         return ModelType.KIMI_K25.value
+
+
+@dataclass
+class HealingMetrics:
+    total_heals: int = 0
+    rate_limit_heals: int = 0
+    error_heals: int = 0
+    timeout_heals: int = 0
+
+
+class SelfHealer:
+    def __init__(
+        self,
+        max_retries: int = 3,
+        base_delay: float = 1.0,
+        max_delay: float = 60.0,
+    ):
+        self.max_retries = max_retries
+        self.base_delay = base_delay
+        self.max_delay = max_delay
+        self.metrics = HealingMetrics()
+        self._failure_counts: dict[str, int] = {}
+        self._retry_counts: dict[str, int] = {}
+
+    def calculate_delay(self, attempt: int) -> float:
+        delay = self.base_delay * (2 ** attempt)
+        return min(delay, self.max_delay)
+
+    def should_retry(self, task_id: str, error_type: str) -> bool:
+        retry_count = self._retry_counts.get(task_id, 0)
+        if retry_count >= self.max_retries:
+            logger.warning(f"Task {task_id} exceeded max retries ({self.max_retries})")
+            return False
+        return True
+
+    def record_failure(self, task_id: str, error_type: str) -> None:
+        self._failure_counts[task_id] = self._failure_counts.get(task_id, 0) + 1
+
+        if error_type == "rate_limit":
+            self.metrics.rate_limit_heals += 1
+        elif error_type == "timeout":
+            self.metrics.timeout_heals += 1
+        else:
+            self.metrics.error_heals += 1
+
+        self.metrics.total_heals += 1
+        logger.info(f"Recorded {error_type} failure for task {task_id}")
+
+    def record_retry(self, task_id: str) -> None:
+        self._retry_counts[task_id] = self._retry_counts.get(task_id, 0) + 1
+
+    def get_failure_count(self, task_id: str) -> int:
+        return self._failure_counts.get(task_id, 0)
+
+    def get_retry_count(self, task_id: str) -> int:
+        return self._retry_counts.get(task_id, 0)
+
+    def reset_task(self, task_id: str) -> None:
+        self._failure_counts.pop(task_id, None)
+        self._retry_counts.pop(task_id, None)
+
+    def get_metrics(self) -> dict[str, Any]:
+        return {
+            "total_heals": self.metrics.total_heals,
+            "rate_limit_heals": self.metrics.rate_limit_heals,
+            "error_heals": self.metrics.error_heals,
+            "timeout_heals": self.metrics.timeout_heals,
+        }
+
+
+class SwarmOrchestratorWithHealing(SwarmOrchestrator):
+    def __init__(self, config: OrchestratorConfig | None = None):
+        super().__init__(config)
+        self._healer = SelfHealer(
+            max_retries=config.max_retries if config else 3,
+        )
+        self._healing_enabled = config.enable_self_healing if config else True
+
+    @property
+    def healer(self) -> SelfHealer:
+        return self._healer
+
+    def is_healing_enabled(self) -> bool:
+        return self._healing_enabled
+
+    def handle_failure(
+        self,
+        task_id: str,
+        error: Exception,
+        error_type: str = "error",
+    ) -> bool:
+        if not self._healing_enabled:
+            return False
+
+        if not self._healer.should_retry(task_id, error_type):
+            return False
+
+        self._healer.record_failure(task_id, error_type)
+        self._healer.record_retry(task_id)
+
+        delay = self._healer.calculate_delay(
+            self._healer.get_retry_count(task_id)
+        )
+        logger.info(
+            f"Scheduling retry for task {task_id} "
+            f"after {delay:.1f}s (attempt {self._healer.get_retry_count(task_id)})"
+        )
+        return True
+
+    def get_healing_status(self) -> dict[str, Any]:
+        return {
+            "enabled": self._healing_enabled,
+            "metrics": self._healer.get_metrics(),
+        }
+
+    def get_health_status(self) -> dict[str, Any]:
+        base_stats = self.get_stats()
+        healing_status = self.get_healing_status()
+        return {
+            **base_stats,
+            **healing_status,
+            "healthy": (
+                healing_status["metrics"]["total_heals"] < 10
+                and not self._rate_limited
+            ),
+        }
